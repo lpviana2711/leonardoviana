@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation'; // Importado o useRouter para fazer o deslogar
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Users, 
@@ -12,13 +12,30 @@ import {
   DollarSign, 
   Menu, 
   X,
-  LogOut // Ícone de sair instalado
+  LogOut,
+  Loader2
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Validação de segurança no carregamento do layout
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/login');
+      } else {
+        setCheckingAuth(false);
+      }
+    };
+
+    checkSession();
+  }, [router]);
 
   const menuItems = [
     { name: 'Painel', href: '/painel', icon: LayoutDashboard },
@@ -29,19 +46,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: 'Notas Fiscais', href: '/faturamento', icon: DollarSign },
   ];
 
-  // Função que simula o Logout e joga o usuário de volta pro login
-  const handleLogout = () => {
+  // Função real de Logout no Supabase
+  const handleLogout = async () => {
     if (confirm("Deseja realmente sair do sistema?")) {
       setIsSidebarOpen(false);
+      await supabase.auth.signOut(); // Encerra a sessão de verdade no Supabase
       router.push('/login');
     }
   };
+
+  // Enquanto verifica se está logado, mostra um carregamento limpo
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="animate-spin text-indigo-600" size={40} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
       {/* HEADER MOBILE */}
       <header className="bg-white border-b print:hidden border-slate-200 p-4 flex justify-between items-center md:hidden sticky top-0 z-50">
-        {/* <img src="/logo.png" alt="Logo" className='w-[120px] h-[100px]' /> */}
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="text-slate-600 focus:outline-none"
@@ -52,21 +78,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* SIDEBAR */}
       <aside className={`
-        fixed inset-y-0 left-0 bg-white border-r border-slate-200 w-64 p-5 z-40 transform transition-transform duration-200 ease-in-out flex flex-col justify-between
+        fixed inset-y-0 left-0 bg-white border-r print:hidden border-slate-200 w-64 p-5 z-40 transform transition-transform duration-200 ease-in-out flex flex-col justify-between
         md:relative md:transform-none
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         {/* PARTE DE CIMA DA SIDEBAR */}
         <div className="space-y-8">
           <div className="hidden md:block">
-             <img src="/logo.png" alt="Logo"  />
-            
+             <img src="/logo.png" alt="Logo" />
           </div>
 
           <nav className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
-              // Ajuste para validar se a rota está ativa mesmo com subpastas
               const isActive = pathname.startsWith(item.href);
               return (
                 <Link
@@ -88,7 +112,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
         </div>
 
-        {/* 🎯 PARTE DE BAIXO DA SIDEBAR: BOTÃO DE SAIR */}
+        {/* PARTE DE BAIXO DA SIDEBAR: BOTÃO DE SAIR */}
         <div className="pt-4 border-t border-slate-100 mt-auto">
           <button
             onClick={handleLogout}
