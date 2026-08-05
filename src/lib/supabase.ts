@@ -3,13 +3,16 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+// Adicione este log para ver no console se as chaves existem em produção
+console.log("SUPABASE URL:", supabaseUrl ? "Carregada com sucesso" : "FALTOU A URL!");
+
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Faltam as variáveis de ambiente do Supabase no arquivo .env.local");
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true, // Mantém você logado mesmo se fechar o navegador
+    persistSession: true,
     autoRefreshToken: true,
   }
 });
