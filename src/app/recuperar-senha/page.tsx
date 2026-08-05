@@ -2,22 +2,32 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { KeyRound, Mail, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
+import { KeyRound, Mail, ArrowLeft, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase'; // Ajuste conforme seu caminho
 
 export default function RecuperarSenhaPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [email, setEmail] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleReset = (e: React.FormEvent) => {
+  const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     
-    setTimeout(() => {
-      setLoading(true);
+    // O redirectTo deve ser a página onde o usuário vai definir a nova senha
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/update-password`,
+    });
+
+    if (error) {
+      setError(error.message);
       setLoading(false);
+    } else {
       setSuccess(true);
-    }, 1500);
+      setLoading(false);
+    }
   };
 
   return (
@@ -31,12 +41,19 @@ export default function RecuperarSenhaPage() {
                 <KeyRound size={32} />
               </div>
               <h1 className="text-2xl font-bold text-slate-800">Recupere sua senha</h1>
-              <p className="text-slate-500 text-sm">Enviaremos um link de redefinição para o seu e-mail cadastrado.</p>
+              <p className="text-slate-500 text-sm">Enviaremos um link de redefinição para o seu e-mail.</p>
             </div>
+
+            {error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm flex items-center gap-2">
+                <AlertCircle size={16} />
+                {error}
+              </div>
+            )}
 
             <form onSubmit={handleReset} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Seu e-mail de acesso</label>
+                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">E-mail de acesso</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input 
@@ -64,9 +81,10 @@ export default function RecuperarSenhaPage() {
             <div className="inline-flex p-3 bg-emerald-50 text-emerald-600 rounded-2xl mx-auto">
               <CheckCircle2 size={36} />
             </div>
-            <h2 className="text-xl font-bold text-slate-800">Verifique sua caixa de entrada</h2>
+            <h2 className="text-xl font-bold text-slate-800">Verifique seu e-mail</h2>
             <p className="text-slate-500 text-sm leading-relaxed">
-              O link de redefinição de senha fictício foi enviado para <strong className="text-slate-700">{email}</strong>. Siga as instruções contidas no e-mail.
+              Enviamos um link de redefinição para <strong className="text-slate-700">{email}</strong>. 
+              Siga as instruções para criar uma nova senha.
             </p>
           </div>
         )}
@@ -77,7 +95,6 @@ export default function RecuperarSenhaPage() {
             Voltar para o Login
           </Link>
         </div>
-
       </div>
     </div>
   );

@@ -40,8 +40,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
       {/* HEADER MOBILE */}
-      <header className="bg-white border-b border-slate-200 p-4 flex justify-between items-center md:hidden sticky top-0 z-50">
-        <span className="font-bold text-xl text-indigo-600">FisioSaaS</span>
+      <header className="bg-white border-b print:hidden border-slate-200 p-4 flex justify-between items-center md:hidden sticky top-0 z-50">
+        {/* <img src="/logo.png" alt="Logo" className='w-[120px] h-[100px]' /> */}
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="text-slate-600 focus:outline-none"
@@ -59,8 +59,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* PARTE DE CIMA DA SIDEBAR */}
         <div className="space-y-8">
           <div className="hidden md:block">
-            <span className="font-bold text-2xl text-indigo-600">FisioSaaS</span>
-            <p className="text-xs text-slate-400 mt-1">Uso Pessoal</p>
+             <img src="/logo.png" alt="Logo"  />
+            
           </div>
 
           <nav className="space-y-1">
