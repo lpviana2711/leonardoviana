@@ -1,24 +1,29 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  const allCookies = request.cookies.getAll();
-  const supabaseCookie = allCookies.find(cookie => 
-    cookie.name.includes('auth-token') || cookie.name.includes('supabase')
-  );
+  const path = request.nextUrl.pathname;
 
-  const isLoginPage = request.nextUrl.pathname.startsWith('/login');
-
-  // Se o usuário NÃO estiver logado e tentar acessar rotas protegidas:
-  if (!supabaseCookie && !isLoginPage) {
-    const url = request.nextUrl.clone(); // CORRIGIDO AQUI
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+  // Permite passar livremente se for a página de login, arquivos estáticos ou rotas públicas
+  if (
+    path.startsWith('/login') ||
+    path.startsWith('/cadastro') ||
+    path.startsWith('/recuperar-senha') ||
+    path.startsWith('/_next') ||
+    path.startsWith('/api') ||
+    path.includes('.')
+  ) {
+    return NextResponse.next();
   }
 
-  // Se o usuário ESTIVER logado e tentar ir para a página de login:
-  if (supabaseCookie && isLoginPage) {
-    const url = request.nextUrl.clone(); // CORRIGIDO AQUI
-    url.pathname = '/painel';
+  // Verifica se existe qualquer cookie de sessão ativo do Supabase de forma ampla
+  const hasSupabaseCookie = request.cookies.getAll().some(cookie => 
+    cookie.name.startsWith('sb-') && cookie.name.endsWith('-auth-token')
+  );
+
+  // Se for uma rota protegida (/painel, /pacientes, /atendimento, etc.) e não tiver o cookie, manda pro login
+  if (!hasSupabaseCookie) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
@@ -26,7 +31,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|login|auth).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
