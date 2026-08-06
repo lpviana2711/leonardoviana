@@ -9,7 +9,9 @@ import {
   ClipboardList, 
   Calendar, 
   FileText, 
-  DollarSign, 
+  DollarSign,
+  ClipboardType, 
+  Stethoscope, 
   Menu, 
   X,
   LogOut,
@@ -38,13 +40,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [router]);
 
   const menuItems = [
-    { name: 'Painel', href: '/painel', icon: LayoutDashboard },
-    { name: 'Pacientes', href: '/pacientes', icon: Users },
-    { name: 'Atendimento', href: '/atendimento', icon: ClipboardList },
-    { name: 'Agenda', href: '/agenda', icon: Calendar },
-    { name: 'Documentos', href: '/documentos', icon: FileText },
-    { name: 'Notas Fiscais', href: '/faturamento', icon: DollarSign },
-  ];
+  { name: 'Painel', href: '/painel', icon: LayoutDashboard },
+  { name: 'Pacientes', href: '/pacientes', icon: Users },
+  { name: '1ª Avaliação/Anamnese', href: '/avaliacao', icon: ClipboardType }, // Nova opção
+  { name: 'Atendimentos', href: '/atendimento', icon: Stethoscope }, // Opção separada
+  { name: 'Agenda', href: '/agenda', icon: Calendar },
+  { name: 'Notas Fiscais', href: '/faturamento', icon: DollarSign },
+];
 
   // Função real de Logout no Supabase
   const handleLogout = async () => {

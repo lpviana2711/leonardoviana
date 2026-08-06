@@ -1,7 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
-import { FileText, Printer, FileEdit, RefreshCw, Info } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  FileText, Printer, FileEdit, RefreshCw, Info, 
+  Search, User, ChevronLeft, Plus, CheckCircle, Loader2, Clock, Eye, Trash2, Activity 
+} from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 const DOCUMENT_TEMPLATES = {
   // ==========================================
@@ -63,14 +67,13 @@ CREFITO N° 438289-F`
   // ==========================================
   // FICHAS DE ANAMNESE E AVALIAÇÃO COMPLETAS
   // ==========================================
-
   anamnese_traumato: {
     title: "Ficha - Traumato-Ortopedia",
     content: `FICHA DE ANAMNESE E AVALIAÇÃO FISIOTERAPÊUTICA
 TRAUMATO-ORTOPEDIA
 
 1. IDENTIFICAÇÃO DO PACIENTE
-Nome: ________________________________________________________________ Idade: _______
+Nome: [Nome do Paciente] | Idade: _______
 
 2. QUEIXA PRINCIPAL (QP) 
 _____________________________________________________________________________________
@@ -205,14 +208,14 @@ CREFITO N° 438289-F`
 FISIOTERAPIA NEUROFUNCIONAL
 
 IDENTIFICAÇÃO
-Nome: __________________________________________________________________________________
+Nome: [Nome do Paciente]
 Data de Nascimento: ___/___/____   Idade: ____   Sexo: ☐ M ☐ F
 Estado Civil: ____________________ Profissão: _____________________________________________
 Responsável/Cuidador: ________________________ Telefone: __________________________________
 Data da Avaliação: ___/___/____   Diagnóstico Médico: _______________________________________
 Encaminhado por: ________________________________________________________________________
 
-QUEIXA PRINCIPAL (QP): __________________________________________________________________
+QUEIXA PRINCIPAL (QP): ________________________________________________________________--
 Tempo de evolução: _________________________ Objetivo do paciente/família: _________________
 
 HISTÓRIA DA DOENÇA ATUAL (HDA):
@@ -269,7 +272,7 @@ FISIOTERAPEUTA | CREFITO N° 438289-F`
 FISIOTERAPIA CARDIOVASCULAR
 
 1. IDENTIFICAÇÃO
-Nome: ________________________________________________________________ Idade: _______
+Nome: [Nome do Paciente] | Idade: _______
 Data de Nascimento: ___/___/____         Sexo: ☐ M  ☐ F
 Estado Civil: ____________________       Telefone: __________________________________
 Data da Avaliação: ___/___/____          Encaminhado por: ___________________________
@@ -414,7 +417,7 @@ CREFITO N° 438289-F`
 AQUÁTICA
 
 1. IDENTIFICAÇÃO DO PACIENTE
-Nome: ________________________________________________________________ Idade: _______
+Nome: [Nome do Paciente] | Idade: _______
 
 2. QUEIXA PRINCIPAL (QP)
 _____________________________________________________________________________________
@@ -512,7 +515,7 @@ CREFITO N° 438289-F`
 TERAPIA INTENSIVA (UTI)
 
 1. IDENTIFICAÇÃO DO PACIENTE
-Nome: ________________________________________________________________ Idade: _______
+Nome: [Nome do Paciente] | Idade: _______
 Sexo: ☐ Adulto ☐ Infantil ☐ Neonatal
 Diagnóstico Médico: _________________________________________________________________
 Data de Internação: ___/___/___ | Motivo da Internação: _________________________________
@@ -591,7 +594,7 @@ CREFITO N° 438289-F`
 TRANSTORNO DO ESPECTRO AUTISTA (TEA)
 
 1. IDENTIFICAÇÃO
-Nome: __________________________________________________ Idade: ___ Sexo: ___
+Nome: [Nome do Paciente] | Idade: ___ Sexo: ___
 Data de Nascimento: ___/___/___ | Data da Avaliação: ___/___/___
 Nome do Responsável: ______________________________ Parentesco: _____________ Tel: ____________
 
@@ -651,8 +654,7 @@ Condutas:
 
 _____________________________________________
 LEONARDO PAULA VIANA
-FISIOTERAPEUTA
-CREFITO N° 438289-F
+FISIOTERAPEUTA | CREFITO N° 438289-F
 
 OBS: EDM (Rosa Neto), Teste Equilíbrio Pediátrico, TUG Pediátrico, TGMD-3.`
   },
@@ -663,7 +665,7 @@ OBS: EDM (Rosa Neto), Teste Equilíbrio Pediátrico, TUG Pediátrico, TGMD-3.`
 SAÚDE DO TRABALHADOR
 
 1. IDENTIFICAÇÃO
-Nome: __________________________________________________ Idade: ___ Sexo: ___
+Nome: [Nome do Paciente] | Idade: ___ Sexo: ___
 Data de Nascimento: ___/___/____   Empresa: _________________________________________
 Setor/Função: ___________________ Tempo na Função: ________ Grau de Instrução: ________
 Telefone: _______________________ Data da Avaliação: ___/___/____
@@ -768,7 +770,7 @@ CREFITO N° 438289-F`
 FISIOTERAPIA NA SAÚDE DO HOMEM
 
 1. IDENTIFICAÇÃO
-Nome: __________________________________________________ Idade: ___
+Nome: [Nome do Paciente] | Idade: ___
 Data de nascimento: ___/___/___ | Data da avaliação: ___/___/___
 Orientação sexual: ________________ Profissão: ________________ Estado Civil: ________
 
@@ -846,7 +848,7 @@ CREFITO N° 438289-F`
 FISIOTERAPIA NA SAÚDE DA MULHER
 
 1. IDENTIFICAÇÃO
-Nome: __________________________________________________ Idade: ____ anos
+Nome: [Nome do Paciente] | Idade: ____ anos
 Data de Nascimento: ___/___/____   Profissão/Grau de Instrução: ________________________
 Estado Civil: ____________________ Telefone: _________________ Data Avaliação: ___/___/____
 Encaminhado por: ____________________________________________________________________
@@ -928,7 +930,7 @@ CREFITO N° 438289-F`
 REUMATOLOGIA
 
 1. IDENTIFICAÇÃO DO PACIENTE
-Nome: __________________________________________________ Idade: ___ ☐ ADULTO ☐ CRIANÇA
+Nome: [Nome do Paciente] | Idade: ___ ☐ ADULTO ☐ CRIANÇA
 
 2. QUEIXA PRINCIPAL (QP)
 Início dos sintomas: __________________________________________________________________
@@ -975,7 +977,7 @@ Cirurgias e Internações: _____________________________________________________
 5. MEDICAMENTOS EM USO
 ☐ AINES ☐ Corticoides ☐ Imunossupressores ☐ Analgésico ☐ Biológicos (Quais? ________)
 Outros: _____________________________________________________________________________
-Efeitos Colaterais: __________________________________________________________________
+Efeitos Colaterais: ________________________________________________________________--
 
 6. HÁBITOS DE VIDA
 Atividade física: ☐ Sedentário ☐ Regular ☐ Ocasional | Frequência semanal: ____
@@ -1031,7 +1033,7 @@ CREFITO N° 438289-F`
 RESPIRATÓRIA
 
 1. IDENTIFICAÇÃO DO PACIENTE
-Nome: ________________________________________________________________ Idade: _______
+Nome: [Nome do Paciente] | Idade: _______
 
 2. QUEIXA PRINCIPAL (QP)
 _____________________________________________________________________________________
@@ -1110,7 +1112,7 @@ Fisioterapeuta: LEONARDO PAULA VIANA | CREFITO: 438289-F | Assinatura: _________
 FISIOTERAPIA QUIROPRÁTICA
 
 1. IDENTIFICAÇÃO
-Nome: __________________________________________________ Idade: ___ Sexo: ☐ M ☐ F
+Nome: [Nome do Paciente] | Idade: ___ Sexo: ☐ M ☐ F
 Data de Nascimento: ___/___/____ | Data da Avaliação: ___/___/____
 Profissão: ________________________________ | Telefone: _________________
 
@@ -1194,7 +1196,7 @@ CREFITO N° 438289-F`
 FISIOTERAPIA ONCOLÓGICA
 
 1. IDENTIFICAÇÃO
-Nome: __________________________________________________ Idade: ____ anos Sexo: ☐M ☐F
+Nome: [Nome do Paciente] | Idade: ____ anos Sexo: ☐M ☐F
 Data de Nascimento: ___/___/____ | Data da Avaliação: ___/___/____
 Telefone: _________________ Estado Civil: ________________ Profissão: _________________
 Contato de Emergência: ______________________________________________________________
@@ -1269,13 +1271,13 @@ FISIOTERAPEUTA
 CREFITO N° 438289-F`
   },
 
- anamnese_geronto: {
+  anamnese_geronto: {
     title: "Ficha - Gerontologia",
     content: `FICHA DE ANAMNESE E AVALIAÇÃO DE FISIOTERAPIA
 FISIOTERAPIA EM GERONTOLOGIA
 
 1. IDENTIFICAÇÃO DO PACIENTE
-Nome: __________________________________________________ Idade: ____ anos
+Nome: [Nome do Paciente] | Idade: ____ anos
 Data de nascimento: ___/___/____ | Data da avaliação: ___/___/____
 
 2. QUEIXA PRINCIPAL (QP):
@@ -1346,13 +1348,13 @@ ANAMNESE EM PSICOMOTRICIDADE CLÍNICA
 PROFISSIONAL: FISIOTERAPEUTA LEONARDO VIANA
 
 1. DADOS PESSOAIS E RESPONSÁVEIS
-Criança: _________________________________ Data Nasc: ___/___/___ Idade: ___
+Criança: [Nome do Paciente] | Data Nasc: ___/___/___ Idade: ___
 Endereço: _________________________________________________________________
 Genitora: ___________________________ Profissão/Escolaridade: _______________
 Genitor: ____________________________ Profissão/Escolaridade: _______________
 
 2. HISTÓRIA GESTACIONAL E PARTO
-Gestação: ☐ Planejada ☐ Risco ☐ Diabetes ☐ Hipertensão ☐ Infecções ☐ Uso Medicação ☐ Tabagismo ☐ Etilismo
+Gestação: ☐ Planejada ☐ Risco ☐ Diabetes ☐ Hypertension ☐ Infecções ☐ Uso Medicação ☐ Tabagismo ☐ Etilismo
 Parto: ☐ Normal ☐ Cesárea ☐ Fórceps | Tempo gest.: ___ sem. | Peso/Alt: ___kg/___cm | APGAR: ___
 UTI Neonatal: ☐ Não ☐ Sim | Intercorrências: __________________________________________
 
@@ -1399,17 +1401,112 @@ FISIOTERAPEUTA | CREFITO-2 438289-F`
 
 type DocType = keyof typeof DOCUMENT_TEMPLATES;
 
-export default function DocumentosPage() {
-  const [selectedDoc, setSelectedDoc] = useState<DocType>('contrato');
-  const [docContent, setDocContent] = useState(DOCUMENT_TEMPLATES.contrato.content);
+export default function AvaliacaoPage() {
+  const [view, setView] = useState<'busca' | 'historico' | 'selecao_modelo' | 'editor'>('busca');
+  const [patients, setPatients] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const handleDocChange = (type: DocType) => {
+  const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
+  const [pastRecords, setPastRecords] = useState<any[]>([]);
+  
+  const [selectedDoc, setSelectedDoc] = useState<DocType>('anamnese_traumato');
+  const [docContent, setDocContent] = useState('');
+
+  // Carrega pacientes
+  useEffect(() => {
+    const fetchPatients = async () => {
+      setLoading(true);
+      const { data } = await supabase.from('patients').select('id, name, cpf').order('name');
+      if (data) setPatients(data);
+      setLoading(false);
+    };
+    fetchPatients();
+  }, []);
+
+  const filteredPatients = patients.filter(p =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.cpf && p.cpf.includes(searchTerm))
+  );
+
+  const handleSelectPatient = async (patient: any) => {
+    setSelectedPatient(patient);
+    setView('historico');
+    loadPatientRecords(patient.id);
+  };
+
+  const loadPatientRecords = async (patientId: string) => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('records')
+      .select('*')
+      .eq('patient_id', patientId)
+      .order('created_at', { ascending: false });
+
+    if (data) setPastRecords(data);
+    setLoading(false);
+  };
+
+  const handleSelectTemplate = (type: DocType) => {
     setSelectedDoc(type);
-    setDocContent(DOCUMENT_TEMPLATES[type].content);
+    let templateText = DOCUMENT_TEMPLATES[type].content;
+    if (selectedPatient) {
+      templateText = templateText.replace('[Nome do Paciente]', selectedPatient.name);
+    }
+    setDocContent(templateText);
+    setView('editor');
+  };
+
+  const handleSaveToDatabase = async () => {
+    setSaving(true);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user || !selectedPatient) {
+      alert('Erro de autenticação ou paciente não selecionado.');
+      setSaving(false);
+      return;
+    }
+
+    const { error } = await supabase.from('records').insert([{
+      user_id: user.id,
+      patient_id: selectedPatient.id,
+      area_fisio: DOCUMENT_TEMPLATES[selectedDoc].title,
+      ficha_completa: { texto_livre: docContent }
+    }]);
+
+    setSaving(false);
+
+    if (error) {
+      alert('Erro ao salvar avaliação: ' + error.message);
+    } else {
+      alert('Avaliação salva com sucesso!');
+      loadPatientRecords(selectedPatient.id);
+      setView('historico');
+    }
+  };
+
+  // Função para excluir uma avaliação salva
+  const handleDeleteRecord = async (recordId: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta avaliação permanentemente?')) return;
+
+    const { error } = await supabase.from('records').delete().eq('id', recordId);
+
+    if (error) {
+      alert('Erro ao excluir: ' + error.message);
+    } else {
+      alert('Avaliação excluída com sucesso.');
+      loadPatientRecords(selectedPatient.id);
+    }
   };
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
   };
 
   return (
@@ -1429,7 +1526,6 @@ export default function DocumentosPage() {
             width: 100%;
             margin: 0;
             padding: 0;
-            /* 🎯 CORREÇÃO: Força uma fonte de sistema amigável a caracteres Unicode */
             font-family: Arial, Helvetica, sans-serif !important;
           }
           html, body, #__next, main, div {
@@ -1444,62 +1540,216 @@ export default function DocumentosPage() {
 
       <div className="space-y-6">
         
-        {/* HEADER TELA */}
+        {/* HEADER DA PÁGINA */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-4 print:hidden">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Documentos e Fichas</h1>
-            <p className="text-slate-500 text-sm">Gere laudos, contratos e fichas de anamnese integrais e completas para impressão.</p>
+          <div className="flex items-center gap-3">
+            {view !== 'busca' && (
+              <button
+                onClick={() => {
+                  if (view === 'editor') setView('selecao_modelo');
+                  else if (view === 'selecao_modelo') setView('historico');
+                  else if (view === 'historico') { setView('busca'); setSelectedPatient(null); }
+                }}
+                className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors cursor-pointer"
+              >
+                <ChevronLeft size={20} />
+              </button>
+            )}
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
+                {view === 'busca' && '1ª Avaliação / Anamnese'}
+                {view === 'historico' && 'Histórico de Avaliações'}
+                {view === 'selecao_modelo' && 'Escolher Modelo de Ficha'}
+                {view === 'editor' && `Editando: ${DOCUMENT_TEMPLATES[selectedDoc]?.title}`}
+              </h1>
+              <p className="text-slate-500 text-sm">
+                {selectedPatient ? `Paciente: ${selectedPatient.name}` : 'Busque o paciente para iniciar a avaliação.'}
+              </p>
+            </div>
           </div>
-          <button 
-            onClick={handlePrint}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm text-sm cursor-pointer"
-          >
-            <Printer size={18} />
-            Imprimir / Exportar PDF
-          </button>
+
+          {view === 'editor' && (
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <button 
+                onClick={handleSaveToDatabase}
+                disabled={saving}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm text-sm cursor-pointer disabled:opacity-70"
+              >
+                {saving ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle size={18} />}
+                Salvar no Prontuário
+              </button>
+              <button 
+                onClick={handlePrint}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm text-sm cursor-pointer"
+              >
+                <Printer size={18} />
+                Imprimir / PDF
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          
-          {/* SELETOR DE DOCUMENTOS */}
-          <div className="space-y-2 print:hidden h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-            <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-3">Modelos Disponíveis:</h3>
-            
-            {(Object.keys(DOCUMENT_TEMPLATES) as DocType[]).map((key) => (
-              <button
-                key={key}
-                onClick={() => handleDocChange(key)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium transition-all text-left ${
-                  selectedDoc === key
-                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <FileText size={18} className="shrink-0" />
-                <span className="truncate">{DOCUMENT_TEMPLATES[key].title}</span>
-              </button>
-            ))}
-          </div>
+        {/* TELA 1: BUSCA DE PACIENTE */}
+        {view === 'busca' && (
+          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden animate-in fade-in">
+            <div className="p-6 border-b border-slate-100 bg-slate-50">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                <input
+                  type="text"
+                  placeholder="Buscar paciente por nome ou CPF para a avaliação..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+              </div>
+            </div>
 
-          {/* EDITOR */}
-          <div className="lg:col-span-3 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col h-[70vh] print:border-none print:shadow-none">
+            <div className="p-2">
+              {loading ? (
+                <div className="flex justify-center p-8"><Loader2 className="animate-spin text-indigo-600" /></div>
+              ) : filteredPatients.length === 0 ? (
+                <div className="text-center p-8 text-slate-500">Nenhum paciente encontrado.</div>
+              ) : (
+                <div className="divide-y divide-slate-100 max-h-[60vh] overflow-y-auto">
+                  {filteredPatients.map(patient => (
+                    <button
+                      key={patient.id}
+                      onClick={() => handleSelectPatient(patient)}
+                      className="w-full flex items-center justify-between p-4 hover:bg-indigo-50 transition-colors rounded-lg group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-3 bg-slate-100 group-hover:bg-indigo-100 text-slate-500 group-hover:text-indigo-600 rounded-full transition-colors">
+                          <User size={20} />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-bold text-slate-800">{patient.name}</p>
+                          <p className="text-xs text-slate-500">CPF: {patient.cpf || 'Não informado'}</p>
+                        </div>
+                      </div>
+                      <span className="flex items-center gap-2 text-sm font-semibold text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Selecionar para Avaliação <ChevronLeft size={16} className="rotate-180" />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TELA 2: HISTÓRICO DE AVALIAÇÕES */}
+        {view === 'historico' && (
+          <div className="space-y-6 animate-in slide-in-from-right-4">
+            <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div>
+                <h3 className="font-bold text-slate-700">Fichas e Laudos Salvos</h3>
+                <p className="text-xs text-slate-500">Histórico de avaliações e documentos deste paciente.</p>
+              </div>
+              <button
+                onClick={() => setView('selecao_modelo')}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm cursor-pointer text-sm"
+              >
+                <Plus size={18} /> Nova Avaliação / Ficha
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="flex justify-center p-12"><Loader2 className="animate-spin text-indigo-600" size={32} /></div>
+            ) : pastRecords.length === 0 ? (
+              <div className="bg-white border border-dashed border-slate-300 rounded-xl p-12 text-center">
+                <Activity className="mx-auto text-slate-300 mb-3" size={48} />
+                <h3 className="text-lg font-bold text-slate-700">Nenhuma avaliação registrada</h3>
+                <p className="text-slate-500 text-sm mb-4">Clique no botão acima para criar a primeira anamnese ou laudo.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {pastRecords.map(record => (
+                  <div
+                    key={record.id}
+                    className="bg-white border border-slate-200 rounded-xl shadow-sm p-4 flex justify-between items-center"
+                  >
+                    <div>
+                      <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
+                        {record.area_fisio}
+                      </span>
+                      <p className="text-xs text-slate-400 mt-2 flex items-center gap-1">
+                        <Clock size={14} /> Registrado em {formatDate(record.created_at)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setDocContent(record.ficha_completa?.texto_livre || JSON.stringify(record.ficha_completa));
+                          setView('editor');
+                        }}
+                        className="flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Eye size={16} /> Visualizar
+                      </button>
+                      <button
+                        onClick={() => handleDeleteRecord(record.id)}
+                        className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                        title="Excluir Avaliação"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TELA 3: SELEÇÃO DE MODELOS (TODAS AS ANAMNESES E DOCUMENTOS) */}
+        {view === 'selecao_modelo' && (
+          <div className="space-y-4 animate-in fade-in">
+            <h2 className="text-lg font-bold text-slate-700 mb-4">Selecione o modelo de laudo, contrato ou anamnese:</h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {(Object.keys(DOCUMENT_TEMPLATES) as DocType[]).map((key) => {
+                const doc = DOCUMENT_TEMPLATES[key];
+                return (
+                  <button
+                    key={key}
+                    onClick={() => handleSelectTemplate(key)}
+                    className="bg-white border border-slate-200 hover:border-indigo-400 hover:shadow-md rounded-xl p-6 text-left transition-all group cursor-pointer flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg w-fit mb-4 group-hover:scale-110 transition-transform">
+                        <FileText size={24} />
+                      </div>
+                      <h3 className="font-bold text-slate-800 text-base mb-1">{doc.title}</h3>
+                    </div>
+                    <span className="text-xs font-semibold text-indigo-600 mt-4 flex items-center gap-1">
+                      Selecionar ficha &rarr;
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* TELA 4: EDITOR E IMPRESSÃO DO DOCUMENTO */}
+        {view === 'editor' && (
+          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col h-[75vh]">
             
-            {/* 🎯 CORREÇÃO: Aviso de que o campo é texto livre */}
             <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50/50 print:hidden shrink-0 gap-2">
               <div className="flex items-center gap-3">
                 <span className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
                   <FileEdit size={14} />
-                  Editor de Documento
+                  Editor de Texto
                 </span>
                 <span className="text-[11px] font-medium text-slate-500 bg-slate-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
                   <Info size={12} />
-                  Texto Livre: Edite ou apague os quadradinhos para preencher
+                  Preencha os campos e clique em Salvar no Prontuário
                 </span>
               </div>
               <button 
-                onClick={() => setDocContent(DOCUMENT_TEMPLATES[selectedDoc].content)}
+                onClick={() => handleSelectTemplate(selectedDoc)}
                 className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
-                title="Restaurar o modelo padrão original"
               >
                 <RefreshCw size={12} />
                 Resetar Modelo
@@ -1513,7 +1763,6 @@ export default function DocumentosPage() {
                 value={docContent}
                 onChange={(e) => setDocContent(e.target.value)}
                 className="w-full h-full min-h-[800px] p-4 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 leading-relaxed text-sm font-mono whitespace-pre bg-slate-50/20 resize-none print:hidden"
-                placeholder="Escreva ou cole o conteúdo do documento aqui..."
                 wrap="off"
               />
 
@@ -1526,7 +1775,8 @@ export default function DocumentosPage() {
 
             </div>
           </div>
-        </div>
+        )}
+
       </div>
     </>
   );
