@@ -6,9 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Users, 
-  ClipboardList, 
   Calendar, 
-  FileText, 
   DollarSign,
   ClipboardType, 
   Stethoscope, 
@@ -40,24 +38,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [router]);
 
   const menuItems = [
-  { name: 'Painel', href: '/painel', icon: LayoutDashboard },
-  { name: 'Pacientes', href: '/pacientes', icon: Users },
-  { name: '1ª Avaliação/Anamnese', href: '/avaliacao', icon: ClipboardType }, // Nova opção
-  { name: 'Atendimentos', href: '/atendimento', icon: Stethoscope }, // Opção separada
-  { name: 'Agenda', href: '/agenda', icon: Calendar },
-  { name: 'Notas Fiscais', href: '/faturamento', icon: DollarSign },
-];
+    { name: 'Painel', href: '/painel', icon: LayoutDashboard },
+    { name: 'Pacientes', href: '/pacientes', icon: Users },
+    { name: '1ª Avaliação/Anamnese', href: '/avaliacao', icon: ClipboardType },
+    { name: 'Atendimentos', href: '/atendimento', icon: Stethoscope },
+    { name: 'Agenda', href: '/agenda', icon: Calendar },
+    { name: 'Notas Fiscais', href: '/faturamento', icon: DollarSign },
+  ];
 
   // Função real de Logout no Supabase
   const handleLogout = async () => {
     if (confirm("Deseja realmente sair do sistema?")) {
       setIsSidebarOpen(false);
-      await supabase.auth.signOut(); // Encerra a sessão de verdade no Supabase
+      await supabase.auth.signOut();
       router.push('/login');
     }
   };
 
-  // Enquanto verifica se está logado, mostra um carregamento limpo
   if (checkingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -68,14 +65,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
-      {/* HEADER MOBILE */}
+      {/* HEADER MOBILE (Apenas o botão de abrir) */}
       <header className="bg-white border-b print:hidden border-slate-200 p-4 flex justify-between items-center md:hidden sticky top-0 z-50">
-        <button 
+       <button 
+
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+
           className="text-slate-600 focus:outline-none"
+
         >
+
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+
         </button>
+
       </header>
 
       {/* SIDEBAR */}
@@ -85,9 +88,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         {/* PARTE DE CIMA DA SIDEBAR */}
-        <div className="space-y-8">
-          <div className="hidden md:block">
-             <img src="/logo.png" alt="Logo" />
+        <div className="space-y-6">
+          
+          {/* TOPO DA SIDEBAR: LOGO + BOTÃO DE FECHAR NO MOBILE */}
+          <div className="flex items-center justify-between">
+            <div className="w-full">
+               <img src="/logo.png" alt="Logo" className="max-h-10 object-contain" />
+            </div>
+            {/* Botão de Fechar visível apenas em telas mobile */}
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg"
+            >
+              <X size={22} />
+            </button>
           </div>
 
           <nav className="space-y-1">
