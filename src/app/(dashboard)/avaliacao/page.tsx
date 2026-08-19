@@ -1678,32 +1678,98 @@ export default function AvaliacaoPage() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{__html: `
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          #area-de-impressao, #area-de-impressao * {
-            visibility: visible;
-          }
-          #area-de-impressao {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, Helvetica, sans-serif !important;
-          }
-          html, body, #__next, main, div {
-            height: auto !important;
-            min-height: auto !important;
-            overflow: visible !important;
-            background: white !important;
-          }
-          @page { margin: 1.5cm; }
+      <style
+  dangerouslySetInnerHTML={{
+    __html: `
+      .print-background {
+        display: none;
+      }
+
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
         }
-      `}} />
+
+        html,
+        body {
+          margin: 0 !important;
+          padding: 0 !important;
+          background: white !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        body * {
+          visibility: hidden;
+        }
+
+        #area-de-impressao,
+        #area-de-impressao * {
+          visibility: visible;
+        }
+
+        #area-de-impressao {
+          display: block !important;
+          position: relative !important;
+          left: 0 !important;
+          top: 0 !important;
+          width: 210mm !important;
+          min-height: 297mm !important;
+          margin: 0 !important;
+          padding: 20mm !important;
+          overflow: visible !important;
+          background: transparent !important;
+          font-family: Arial, Helvetica, sans-serif !important;
+        }
+
+        .print-background {
+          display: block !important;
+          position: fixed !important;
+          inset: 0 !important;
+          width: 210mm !important;
+          height: 297mm !important;
+          z-index: 0 !important;
+          pointer-events: none !important;
+        }
+
+        .print-background img {
+          display: block !important;
+          width: 210mm !important;
+          height: 297mm !important;
+          object-fit: cover !important;
+        }
+
+        .print-content {
+          position: relative !important;
+          z-index: 1 !important;
+          background: transparent !important;
+        }
+
+        #area-de-impressao pre {
+          position: relative !important;
+          z-index: 1 !important;
+          margin: 0 !important;
+          background: transparent !important;
+          color: #000 !important;
+          white-space: pre-wrap !important;
+          overflow: visible !important;
+        }
+
+        #area-de-impressao,
+        #area-de-impressao > div,
+        #area-de-impressao pre {
+          background-color: transparent !important;
+        }
+
+        /* Impede que o CSS antigo pinte todas as divs de branco */
+        html body div {
+          background-color: transparent;
+        }
+      }
+    `,
+  }}
+/>
 
       <div className="space-y-6">
         
@@ -1900,49 +1966,70 @@ export default function AvaliacaoPage() {
         )}
 
         {/* TELA 4: EDITOR E IMPRESSÃO DO DOCUMENTO */}
-        {view === 'editor' && (
-          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col h-[75vh]">
-            
-            <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50/50 print:hidden shrink-0 gap-2">
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
-                  <FileEdit size={14} />
-                  Editor de Texto
-                </span>
-                <span className="text-[11px] font-medium text-slate-500 bg-slate-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                  <Info size={12} />
-                  Preencha os campos e clique em Salvar no Prontuário
-                </span>
-              </div>
-              <button 
-                onClick={() => handleSelectTemplate(selectedDoc)}
-                className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
-              >
-                <RefreshCw size={12} />
-                Resetar Modelo
-              </button>
-            </div>
+{view === 'editor' && (
+  <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col h-[75vh]">
 
-            <div className="p-6 md:p-8 overflow-y-auto overflow-x-auto flex-1">
-              
-              {/* TEXTAREA PARA EDIÇÃO */}
-              <textarea
-                value={docContent}
-                onChange={(e) => setDocContent(e.target.value)}
-                className="w-full h-full min-h-[800px] p-4 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 leading-relaxed text-sm font-mono whitespace-pre bg-slate-50/20 resize-none print:hidden"
-                wrap="off"
-              />
+    {/* BARRA DO EDITOR — NÃO IMPRIME */}
+    <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50/50 print:hidden shrink-0 gap-2">
+      <div className="flex items-center gap-3">
+        <span className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
+          <FileEdit size={14} />
+          Editor de Texto
+        </span>
 
-              {/* ÁREA DE IMPRESSÃO PURA */}
-              <div id="area-de-impressao" className="hidden print:block w-full">
-                <pre className="font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-black w-full break-words">
-                  {docContent}
-                </pre>
-              </div>
+        <span className="text-[11px] font-medium text-slate-500 bg-slate-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+          <Info size={12} />
+          Preencha os campos e clique em Salvar no Prontuário
+        </span>
+      </div>
 
-            </div>
-          </div>
-        )}
+      <button
+        type="button"
+        onClick={() => handleSelectTemplate(selectedDoc)}
+        className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+      >
+        <RefreshCw size={12} />
+        Resetar Modelo
+      </button>
+    </div>
+
+    {/* ÁREA DO EDITOR */}
+    <div className="p-6 md:p-8 overflow-y-auto overflow-x-auto flex-1 print:p-0 print:overflow-visible">
+
+      {/* TEXTAREA — APARECE SOMENTE NA TELA */}
+      <textarea
+        value={docContent}
+        onChange={(e) => setDocContent(e.target.value)}
+        className="w-full h-full min-h-[800px] p-4 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 leading-relaxed text-sm font-mono whitespace-pre bg-slate-50/20 resize-none print:hidden"
+        wrap="off"
+      />
+
+     {/* ÁREA DE IMPRESSÃO — SOMENTE NA IMPRESSÃO */}
+<div
+  id="area-de-impressao"
+  className="hidden print:block relative w-full min-h-[297mm]"
+>
+  {/* IMAGEM DE FUNDO */}
+  <div
+    className="print-background"
+    aria-hidden="true"
+  >
+    <img
+      src="/modelo-para-marca-d_água.jpg"
+      alt=""
+    />
+  </div>
+
+  {/* TEXTO DO DOCUMENTO */}
+  <div className="print-content">
+    <pre className="font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-black w-full break-words m-0">
+      {docContent}
+    </pre>
+  </div>
+</div>
+    </div>
+  </div>
+)}
 
       </div>
     </>

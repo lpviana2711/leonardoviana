@@ -7,6 +7,7 @@ import {
   ClipboardList, FileBarChart2, Camera, Stethoscope, ShieldCheck,
   UserCheck, Syringe
 } from 'lucide-react';
+import Image from "next/image";
 
 export default function DocumentosPage() {
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
@@ -358,6 +359,16 @@ export default function DocumentosPage() {
   // ===========================================================================
     return (
     <div className="p-6 max-w-4xl mx-auto">
+  <div className="print-area">
+    <div className="print-background hidden print:block" aria-hidden="true z-index-10">
+  <img
+    src="/modelo-para-marca-d_água.jpg"
+    alt=""
+    className="w-full h-full object-cover"
+  />
+</div>
+
+    <div className="print-content">
       {/* HEADER NÃO IMPRESSO */}
       <div className="print:hidden flex items-center justify-between mb-8">
         <button 
@@ -418,7 +429,7 @@ export default function DocumentosPage() {
             </div>
           </div>
 
-          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
+          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:bg-transparent print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
             <div className="text-center mb-16 pt-8">
               <h1 className="text-2xl font-bold uppercase tracking-widest underline">Atestado de Repouso</h1>
             </div>
@@ -498,7 +509,7 @@ export default function DocumentosPage() {
             </div>
           </div>
 
-          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
+          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:bg-transparent print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
             <div className="text-center mb-16 pt-8">
               <h1 className="text-2xl font-bold uppercase tracking-widest underline">Atestado Fisioterapêutico</h1>
             </div>
@@ -577,7 +588,7 @@ export default function DocumentosPage() {
             </div>
           </div>
 
-          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
+          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:bg-transparent print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
             <div className="text-center mb-16 pt-8">
               <h1 className="text-2xl font-bold uppercase tracking-widest underline">Declaração de Atendimento</h1>
             </div>
@@ -651,7 +662,7 @@ export default function DocumentosPage() {
             </div>
           </div>
 
-          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
+          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:bg-transparent print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
             <div className="text-center mb-12 pt-8">
               <h1 className="text-2xl font-bold uppercase tracking-widest underline">Encaminhamento para Especialidades</h1>
             </div>
@@ -753,7 +764,7 @@ export default function DocumentosPage() {
             </div>
           </div>
 
-          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
+          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:bg-transparent print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
             <div className="text-center mb-14 pt-8">
               <h1 className="text-2xl font-bold uppercase tracking-widest underline">Relatório de Alta</h1>
             </div>
@@ -1196,7 +1207,7 @@ export default function DocumentosPage() {
             </div>
           </div>
 
-          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
+          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:bg-transparent print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
             <div className="text-center mb-10 pt-6">
               <h1 className="text-2xl font-bold uppercase tracking-widest underline">Relatório Fisioterapêutico</h1>
             </div>
@@ -1301,7 +1312,7 @@ export default function DocumentosPage() {
             </div>
           </div>
 
-          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
+          <div className="bg-white p-12 border border-gray-200 rounded-lg shadow-sm print:bg-transparent print:shadow-none print:border-none print:p-0 min-h-[800px] flex flex-col relative text-gray-800">
             <div className="text-center mb-8 pt-4">
               <h1 className="text-2xl font-bold uppercase tracking-widest underline">Relatório Fisioterapêutico</h1>
             </div>
@@ -1930,6 +1941,9 @@ export default function DocumentosPage() {
             
                           </>
       )}
-      </div>
+          </div>
+  </div>
+</div>
+      
   );
 }
