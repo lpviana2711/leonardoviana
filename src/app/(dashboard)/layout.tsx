@@ -97,7 +97,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* TOPO DA SIDEBAR: LOGO + BOTÃO DE FECHAR NO MOBILE */}
           <div className="flex items-center justify-between">
             <div className="w-full">
-               <img src="/logo.png" alt="Logo" className="max-h-10 object-contain" />
+               <img src="/logo.png" alt="Logo" className="object-contain" />
             </div>
             {/* Botão de Fechar visível apenas em telas mobile */}
             <button
