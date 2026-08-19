@@ -360,7 +360,7 @@ export default function DocumentosPage() {
     return (
     <div className="p-6 max-w-4xl mx-auto">
   <div className="print-area">
-    <div className="print-background hidden print:block" aria-hidden="true z-index-10">
+    <div className="print-background hidden print:block" aria-hidden="true">
   <img
     src="/modelo-para-marca-d_água.jpg"
     alt=""
