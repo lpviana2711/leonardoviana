@@ -1066,7 +1066,102 @@ const FICHAS: FichaSchema[] = [
         TA('condutaProximaSessao', 'Conduta para Próxima Sessão', 3, 3),
       ]),
     ],
-  }];
+  },
+  // ============================= 16. PILATES =============================
+  {
+    key: 'Pilates',
+    label: 'Pilates',
+    icon: Activity,
+    color: 'emerald',
+    description: 'Ficha completa de atendimento para sessões de Pilates, incluindo controle motor e avaliação de desempenho.',
+    summaryMap: {
+      objetivos: ['objetivosSessao'],
+      procedimentos: ['metodoAparelhos', 'condutaFisioterapeutica', 'exerciciosRealizados'],
+      reavaliacao: ['reavaliacaoFinal', 'observacoes'],
+    },
+    sections: [
+      SEC('identificacao', '1. Identificação', [
+        T('idade', 'Idade', 1),
+        T('sessaoNumero', 'Sessão Nº', 1),
+        T('horario', 'Horário', 1),
+        T('fisioterapeuta', 'Fisioterapeuta', 3),
+      ]),
+      SEC('avaliacaoPre', '2. Avaliação Pré-Sessão', [
+        T('pa', 'PA (mmHg)', 1),
+        T('fc', 'FC (bpm)', 1),
+        T('fr', 'FR (irpm)', 1),
+        T('spo2', 'SpO₂ (%)', 1),
+        T('temp', 'Temp (°C)', 1),
+        T('dorInicial', 'EVA Inicial (0-10)', 1),
+        T('dorLocalizacao', 'Localização da dor', 2),
+        RD('estadoGeral', 'Estado Geral', ['Excelente', 'Bom', 'Regular', 'Ruim'], 3),
+        RD('disposicao', 'Disposição', ['Boa', 'Regular', 'Baixa'], 3),
+        TA('observacoesPre', 'Observações / alterações desde a última sessão', 2, 3),
+      ]),
+      SEC('objetivoSessao', '3. Objetivo da Sessão', [
+        CK('objetivosSessao', 'Objetivos', [
+          'Redução da dor', 'Mobilidade', 'Flexibilidade', 'Fortalecimento muscular', 
+          'Estabilidade de tronco', 'Estabilidade pélvica', 'Controle motor', 
+          'Consciência corporal', 'Correção postural', 'Equilíbrio / propriocepção', 
+          'Coordenação', 'Respiração', 'Condicionamento físico', 'Melhora funcional', 
+          'Prevenção e Reabilitação'
+        ]),
+        T('objetivoOutro', 'Outro', 3),
+      ]),
+      SEC('metodoAparelhos', '4. Método / Aparelhos Utilizados', [
+        CK('metodoAparelhos', 'Aparelhos / Método', ['Pilates', 'Reformer', 'Cadillac', 'Chair', 'Barrel', 'Solo']),
+        CK('acessorios', 'Acessórios', ['Bola', 'Faixa elástica', 'Anel', 'Rolo']),
+        T('metodoOutro', 'Outro', 3),
+      ]),
+      SEC('exercicios', '5. Exercícios Realizados', [
+        TA('exerciciosRealizados', 'Descreva os exercícios (Exercício, Aparelho/Acessório, Séries, Repetições, Carga/Resistência)', 4, 3),
+      ]),
+      SEC('controleDesempenho', '6. Controle e Desempenho', [
+        RD('controleTronco', 'Controle de tronco', ['Adequado', 'Parcial', 'Insatisfatório']),
+        RD('controlePelvico', 'Controle pélvico', ['Adequado', 'Parcial', 'Insatisfatório']),
+        RD('controleEscapular', 'Controle escapular', ['Adequado', 'Parcial', 'Insatisfatório']),
+        RD('ativacaoCore', 'Ativação de core', ['Adequada', 'Parcial', 'Insatisfatória']),
+        RD('respiracaoExercicios', 'Respiração durante os exercícios', ['Adequada', 'Necessita correção']),
+        RD('coordenacaoMotora', 'Coordenação motora', ['Adequada', 'Parcial', 'Alterada']),
+        RD('equilibrio', 'Equilíbrio', ['Adequado', 'Parcial', 'Alterado']),
+        T('compensacoes', 'Compensações observadas', 3),
+      ]),
+      SEC('evolucaoSessao', '7. Evolução Durante a Sessão', [
+        RD('respostaExercicio', 'Resposta do paciente ao exercício', ['Boa', 'Regular', 'Insatisfatória']),
+        T('dorSessao', 'Dor durante a sessão – EVA', 1),
+        T('fadigaPercebida', 'Fadiga percebida (0–10)', 2),
+        RD('intercorrencia', 'Intercorrência?', ['Não', 'Sim']),
+        T('intercorrenciaQual', 'Qual intercorrência?', 3),
+        RD('necessidadeAdaptacao', 'Necessidade de adaptação dos exercícios', ['Não', 'Sim']),
+        T('adaptacoesRealizadas', 'Adaptações realizadas', 3),
+      ]),
+      SEC('condutaFisioterapeutica', '8. Conduta Fisioterapêutica', [
+        CK('condutaFisioterapeutica', 'Condutas', [
+          'Aquecimento', 'Mobilidade articular', 'Alongamento muscular', 'Flexibilidade',
+          'Fortalecimento muscular', 'Ativação do core', 'Estabilização lombo-pélvica',
+          'Estabilização de tronco', 'Estabilização escapular', 'Controle motor', 
+          'Reeducação postural', 'Consciência corporal', 'Equilíbrio', 'Propriocepção', 
+          'Coordenação motora', 'Treino respiratório', 'Dissociação de movimentos', 
+          'Treino de marcha', 'Treino funcional', 'Exercícios de transferência', 
+          'Treino de resistência muscular', 'Exercícios para coluna', 
+          'Exercícios para membros superiores', 'Exercícios para membros inferiores', 
+          'Exercícios para cintura pélvica', 'Exercícios para cintura escapular', 
+          'Relaxamento', 'Progressão de exercícios', 'Regressão/adaptação de exercícios', 
+          'Orientação postural', 'Orientações domiciliares'
+        ]),
+        T('condutaOutros', 'Outros', 3),
+      ]),
+      SEC('reavaliacao', '9. Reavaliação ao Final da Sessão', [
+        T('dorFinal', 'Dor – EVA (0–10)', 1),
+        T('percepcaoEsforco', 'Percepção de esforço (0–10)', 2),
+        RD('percepcaoMelhora', 'Percepção de melhora', ['Sim', 'Parcial', 'Não']),
+      ]),
+      SEC('obsFinal', '10. Observações', [
+        TA('observacoes', 'Observações finais', 3, 3),
+      ]),
+    ],
+  }
+];
 
 
 // Cores tailwind usadas nos botões/badges de cada ficha (mapa estático p/ o compilador do Tailwind enxergar as classes)

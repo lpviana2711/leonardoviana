@@ -1397,6 +1397,173 @@ _____________________________________________
 LEONARDO PAULA VIANA
 FISIOTERAPEUTA | CREFITO-2 438289-F`
   },
+  anamnese_pilates: {
+    title: "Ficha - Pilates",
+    content: `FICHA DE ANAMNESE E AVALIAÇÃO FISIOTERAPÊUTICA
+PILATES
+
+1. IDENTIFICAÇÃO DO ALUNO
+Nome: [Nome do Paciente] | Idade: _________
+Data de nascimento: _____ / ____ /_______ Telefone / WhatsApp: __________________________ 
+Profissão: ________________________
+
+2. OBJETIVO PRINCIPAL E HISTÓRICO
+Objetivo principal com o Pilates: ______________________________________________________
+Frequência desejada: __________________________ Experiência prévia: ___________________
+Atividade física atual: __________________________ Nível percebido: _____________________
+O que espera melhorar? _____________________________________________________________
+__________________________________________________________________________________
+
+3. HISTÓRIA DA CONDIÇÃO ATUAL
+Início dos sintomas / queixa: _________________________________________________________
+Mecanismo / origem da queixa: _______________________________________________________
+Tempo de evolução: ________________________________________________________________
+Localização dos sintomas: ___________________________________________________________
+Irradiação / sintomas associados: _____________________________________________________
+
+Frequência: ☐ Contínua ☐ Intermitente | Intensidade EVA (0–10): _______
+Tipo da dor: 
+☐ Pontada ☐ Queimação ☐ Peso ☐ Latejante ☐ Formigamento 
+☐ Dormência ☐ Choque ☐ Outro: _________________________________________________
+
+Fatores que pioram: 
+☐ Movimento ☐ Caminhada ☐ Esforço ☐ Alongamento ☐ Em pé 
+☐ Sentado ☐ Outro: ______________________________________________________________
+
+Fatores que aliviam: 
+☐ Repouso ☐ Medicação ☐ Gelo ☐ Calor ☐ Alongamento 
+☐ Massagem ☐ Outro: _____________________________________________________________
+
+Sintomas associados: 
+☐ Edema ☐ Formigamento ☐ Dormência ☐ Fraqueza ☐ Instabilidade 
+☐ Limitação funcional ☐ Outro: ______________________________________________________
+
+4. TRIAGEM DE SAÚDE E SEGURANÇA
+Queixas apresentadas: ☐ Dor no peito ☐ Desconforto aos esforços ☐ Falta de ar ☐ Tontura
+☐ Desmaio ☐ Hipertensão 
+
+Doenças/Comorbidades: 
+☐ Diabetes ☐ Doença respiratória ☐ Cirurgia recente ☐ Fratura / trauma
+☐ Osteoporose ☐ Doença neurológica ☐ Doença reumatológica ☐ Gestação / pós-parto 
+☐ Alteração importante de equilíbrio ☐ Outra condição relevante: _____________________________
+
+Medicamentos relevantes: ___________________________________________________________
+Alergias / restrições: ________________________________________________________________ 
+
+5. HÁBITOS DE VIDA
+Atividade física: ☐ Sim ☐ Não Qual? ________________________________________________
+Tabagismo: ☐ Sim ☐ Não | Etilismo: ☐ Sim ☐ Não | Água: ☐ Normal ☐ Pouca +/- ____ L
+Qualidade do sono: ☐ Boa ☐ Regular ☐ Ruim | Intestino: ☐ Normal ☐ Solto ☐ Preso
+
+6. AVALIAÇÃO POSTURAL E FUNCIONAL
+Postura: 
+☐ Cabeça anteriorizada ☐ Hipercifose ☐ Hiperlordose ☐ Ombros protraídos 
+☐ Assimetria pélvica ☐ Escoliose ☐ Geno valgo ☐ Geno varo ☐ Pé plano ☐ Pé cavo
+Obs: ______________________________________________________________________________
+
+Movimento/função: 
+☐ Agachamento ☐ Sentar/levantar ☐ Apoio unipodal ☐ Controle de tronco
+☐ Controle pélvico ☐ Controle escapular ☐ Coordenação ☐ Compensações ☐ Limita. Funcional
+Obs: ______________________________________________________________________________
+
+Marcha: 
+☐ Normal ☐ Antálgica ☐ Atáxica ☐ Claudicante ☐ Escarvante ☐ Sem auxílio ☐ Com auxílio
+Observações: ______________________________________________________________________
+
+7. INSPEÇÃO
+☐ Edema _______________ ☐ Hematoma _______________ ☐ Atrofia muscular _____________ 
+☐ Espasmo muscular _____________ ☐ Cicatriz ______________ ☐ Deformidade ____________ 
+☐ Alteração de temperatura ____________________ ☐ Assimetria corporal _____________________
+☐ Alteração de alinhamento ____________________ ☐ Alteração de movimento ________________
+Obs: ______________________________________________________________________________
+
+8. PALPAÇÃO
+☐ Dor à palpação ______________ ☐ Hipertonia ______________ ☐ Hipotonia ______________ 
+☐ Crepitação ________________ ☐ Trigger points _____________ ☐ Nódulo ________________
+☐ Sensibilidade alterada ____________________ ☐ Outro: ________________________________
+Local / observações: _________________________________________________________________
+
+9. AVALIAÇÃO DA DOR
+Escala Visual Analógica (EVA) 0 a 10. Valor referido: ________
+Local principal: _____________________________________________________________________ 
+Pior momento: _____________________________________________________________________ 
+Melhor momento: ___________________________________________________________________ 
+
+10. MOBILIDADE, AMPLITUDE E FLEXIBILIDADE
+Movimento / segmento    Direito     Esquerdo    Dor / limitação
+Cervical                _________   _________   _______________________________
+Ombros                  _________   _________   _______________________________
+Coluna torácica         _________   _________   _______________________________
+Coluna lombar           _________   _________   _______________________________
+Quadril                 _________   _________   _______________________________
+Joelhos                 _________   _________   _______________________________
+Tornozelos              _________   _________   ______________________________
+Cadeia posterior        _________   _________   _______________________________
+Observações: _______________________________________________________________________
+
+11. FORÇA, CONTROLE MOTOR E ESTABILIDADE
+MMSS — D: ______ E: ______ Observações: ____________________________________________
+MMII — D: ______ E: ______ Observações: ___________________________________________
+Controle de tronco: _________________________ Estabilidade pélvica: _______________________
+Estabilidade escapular: ______________________ Ativação de core: _________________________
+Controle de joelho: _________________________ Controle de quadril: ________________________
+Coordenação: _____________________________ Resistência muscular: ______________________
+Testes realizados / resultados: __________________________________________________________
+
+12. EQUILÍBRIO, COORDENAÇÃO E FUNCIONALIDADE
+Equilíbrio estático: ☐ Normal ☐ Alterado | Equilíbrio dinâmico: ☐ Normal ☐ Alterado
+Marcha: ☐ Normal ☐ Alterada | Apoio unipodal: ☐ Normal ☐ Alterado
+Agachamento: ☐ Adequado ☐ Compensações | Sentar/levantar: ☐ Adequado ☐ Compensações
+Outro teste funcional: _______________________________________________________________
+Resultados / compensações / limitações: _______________________________________________
+
+13. RESPIRAÇÃO
+☐ Respiração torácica ☐ Respiração abdominal ☐ Padrão alterado ☐ Dificuldade respiração
+☐ Eupneico ☐ Taquipneico ☐ Dispneico
+
+14. CONSCIÊNCIA CORPORAL
+☐ Boa percepção corporal ☐ Treino de consciência corporal ☐ Boa dissociação 
+☐ Treino de dissociação
+Observações: ______________________________________________________________________ 
+
+15. AVALIAÇÃO FUNCIONAL E PERCEPÇÃO
+Condicionamento percebido (0–10): ________ Limitação funcional (0–10): ________
+Confiança para movimentos (0–10): ________ Dor aceitável no exercício (0–10): ________
+Atividades que deseja melhorar ou voltar a realizar: _________________________________________
+
+16. OBJETIVOS TERAPÊUTICOS / DO PILATES
+☐ Redução da dor ☐ Ganho de mobilidade ☐ Fortalecimento ☐ Melhora funcional
+☐ Consciência/correção postural ☐ Equilíbrio ☐ Propriocepção ☐ Respiração
+☐ Condicionamento ☐ Retorno às AVDs ☐ Retorno esportivo 
+☐ Outros: __________________________________________________________________________
+
+17. PLANEJAMENTO E CONDUTA
+Classificação: ☐ Apto conforme avaliação ☐ Apto com adaptações ☐ Apto com restrições 
+☐ Avaliação complementar ☐ Encaminhamento ☐ Liberação
+Modalidade: ☐ Individual ☐ Pequeno grupo | Nível: ☐ Básico ☐ Intermediário ☐ Avançado
+Frequência: __________ Duração: __________ 
+Restrições / cuidados específicos: ____________________________________________________
+ 
+18. OBJETIVOS E CONDUTAS
+OBJETIVO                REGIÃO TRABALHADA        APARELHO
+☐ Mobilidade            ☐ Cintura escapular      ☐ Reformer
+☐ Estabilidade          ☐ Tronco / Coluna        ☐ Chair
+☐ Alongamento           ☐ Quadril                ☐ Barrel
+☐ Fortalecimento        ☐ MMSS                   ☐ Cadillac
+☐ Melhora postural      ☐ MMII                   ☐ Solo
+
+Objetivo geral: _____________________________________________________________________
+Condutas / exercícios prioritários / progressões: ________________________________________
+
+19. OBSERVAÇÕES 
+__________________________________________________________________________________
+__________________________________________________________________________________
+
+__________________________________________________
+LEONARDO PAULA VIANA
+FISIOTERAPEUTA
+CREFITO Nº 438289-F`
+  }
 };
 
 type DocType = keyof typeof DOCUMENT_TEMPLATES;

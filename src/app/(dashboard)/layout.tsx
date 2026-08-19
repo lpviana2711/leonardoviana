@@ -11,6 +11,8 @@ import {
   ClipboardType, 
   Stethoscope, 
   Menu, 
+  Book,
+  Search,
   X,
   LogOut,
   Loader2
@@ -43,6 +45,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: '1ª Avaliação/Anamnese', href: '/avaliacao', icon: ClipboardType },
     { name: 'Atendimentos', href: '/atendimento', icon: Stethoscope },
     { name: 'Agenda', href: '/agenda', icon: Calendar },
+    { name: 'Formularios', href: '/formularios', icon: Book },
+    { name: 'Testes', href: '/testes', icon: Search },
     { name: 'Notas Fiscais', href: '/faturamento', icon: DollarSign },
   ];
 
