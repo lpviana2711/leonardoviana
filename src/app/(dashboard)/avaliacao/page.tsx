@@ -1568,6 +1568,188 @@ CREFITO Nº 438289-F`
 
 type DocType = keyof typeof DOCUMENT_TEMPLATES;
 
+
+// Acha a chave do template a partir do título salvo em area_fisio
+const findTemplateKeyByTitle = (title: string): DocType | null => {
+  const entry = (Object.entries(DOCUMENT_TEMPLATES) as [DocType, typeof DOCUMENT_TEMPLATES[DocType]][])
+    .find(([_, doc]) => doc.title === title);
+  return entry ? entry[0] : null;
+};
+
+// Converte fichas antigas (formato estruturado) em texto legível
+const formatOldFields = (ficha: any): string => {
+  const labels: Record<string, string> = {
+    adm: 'ADM',
+    marcha: 'Marcha',
+    dorApos: 'Dor (após)',
+    dorAntes: 'Dor (antes)',
+    evolucao: 'Evolução',
+    inspecao: 'Inspeção',
+    palpacao: 'Palpação',
+    medicacao: 'Medicação',
+    objetivos: 'Objetivos',
+    admSegmento: 'ADM Segmento',
+  };
+
+  return Object.entries(ficha || {})
+    .filter(([_, valor]) => {
+      if (Array.isArray(valor)) return valor.length > 0;
+      return valor !== '' && valor !== null && valor !== undefined;
+    })
+    .map(([campo, valor]) => {
+      const label = labels[campo] || campo.toUpperCase();
+      const texto = Array.isArray(valor) ? valor.join(', ') : String(valor);
+      return `${label}: ${texto}`;
+    })
+    .join('\n');
+};
+
+// Monta o conteúdo a ser exibido no editor para um registro salvo
+const buildRecordContent = (record: any, patientName?: string): string => {
+  const ficha = record.ficha_completa;
+
+  // Formato novo: já é texto livre baseado no template
+  if (ficha?.texto_livre) return ficha.texto_livre;
+
+  // Formato antigo (estruturado): reconstrói a partir do template correspondente
+  const templateKey = findTemplateKeyByTitle(record.area_fisio);
+  let base = templateKey ? DOCUMENT_TEMPLATES[templateKey].content : '';
+
+  if (base && patientName) {
+    base = base.replace('[Nome do Paciente]', patientName);
+  }
+
+  const dadosAntigos = formatOldFields(ficha);
+
+  if (!base) {
+    // Não achou o template: mostra só os dados salvos (ou aviso se estiver tudo vazio)
+    return dadosAntigos || 'Nenhum dado preenchido neste registro.';
+  }
+
+  if (!dadosAntigos) {
+    // Template encontrado, mas sem dados salvos: mostra o modelo em branco
+    return base;
+  }
+
+  return `${base}\n\n----------------------------------------\nDADOS REGISTRADOS ANTERIORMENTE (formato antigo):\n----------------------------------------\n${dadosAntigos}`;
+};
+
+function InteractiveTemplateEditor({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (newValue: string) => void;
+}) {
+  const lines = value.split('\n');
+
+  const updateLine = (lineIndex: number, newLineText: string) => {
+    const newLines = [...lines];
+    newLines[lineIndex] = newLineText;
+    onChange(newLines.join('\n'));
+  };
+
+  return (
+    <div className="w-full h-full min-h-[800px] p-4 border border-slate-200 rounded-lg bg-slate-50/20 overflow-auto font-mono text-sm leading-relaxed print:hidden">
+      {lines.map((line, lineIndex) => (
+        <EditableLine
+          key={lineIndex}
+          line={line}
+          onChangeLine={(newLine) => updateLine(lineIndex, newLine)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function EditableLine({
+  line,
+  onChangeLine,
+}: {
+  line: string;
+  onChangeLine: (newLine: string) => void;
+}) {
+  type Token = { type: 'text' | 'checkbox'; value: string };
+
+  // Tokeniza a linha separando texto normal dos símbolos de checkbox
+  const tokens: Token[] = [];
+  const regex = /(☐|☑)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(line)) !== null) {
+    if (match.index > lastIndex) {
+      tokens.push({ type: 'text', value: line.slice(lastIndex, match.index) });
+    }
+    tokens.push({ type: 'checkbox', value: match[0] });
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < line.length) {
+    tokens.push({ type: 'text', value: line.slice(lastIndex) });
+  }
+  if (tokens.length === 0) tokens.push({ type: 'text', value: '' });
+
+  const rebuild = (newTokens: Token[]) => {
+    onChangeLine(newTokens.map((t) => t.value).join(''));
+  };
+
+  const toggleCheckbox = (idx: number) => {
+    const newTokens = tokens.map((t, i) =>
+      i === idx ? { ...t, value: t.value === '☐' ? '☑' : '☐' } : t
+    );
+    rebuild(newTokens);
+  };
+
+  const updateText = (idx: number, newValue: string) => {
+    const newTokens = tokens.map((t, i) => (i === idx ? { ...t, value: newValue } : t));
+    rebuild(newTokens);
+  };
+
+  if (line === '') {
+    return <div style={{ minHeight: '1.5em' }}>&nbsp;</div>;
+  }
+
+  return (
+    <div className="flex items-center whitespace-pre" style={{ minHeight: '1.5em' }}>
+      {tokens.map((token, idx) => {
+        if (token.type === 'checkbox') {
+          return (
+            <input
+              key={idx}
+              type="checkbox"
+              checked={token.value === '☑'}
+              onChange={() => toggleCheckbox(idx)}
+              className="accent-indigo-600 w-3.5 h-3.5 mx-0.5 shrink-0 cursor-pointer"
+              title="Clique para marcar/desmarcar"
+            />
+          );
+        }
+
+        // Trecho só com espaços: mantém como espaçamento visual (não editável)
+        if (token.value.trim() === '') {
+          return (
+            <span key={idx} style={{ whiteSpace: 'pre' }}>
+              {token.value}
+            </span>
+          );
+        }
+
+        // Trecho com conteúdo real: vira campo editável
+        return (
+          <input
+            key={idx}
+            type="text"
+            value={token.value}
+            onChange={(e) => updateText(idx, e.target.value)}
+            className="bg-transparent border-none outline-none focus:bg-indigo-50 focus:ring-1 focus:ring-indigo-300 rounded font-mono text-sm text-slate-700"
+            style={{ width: `${Math.max(token.value.length, 1)}ch`, minWidth: '1ch' }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AvaliacaoPage() {
   const [view, setView] = useState<'busca' | 'historico' | 'selecao_modelo' | 'editor'>('busca');
   const [patients, setPatients] = useState<any[]>([]);
@@ -1580,6 +1762,8 @@ export default function AvaliacaoPage() {
   
   const [selectedDoc, setSelectedDoc] = useState<DocType>('anamnese_traumato');
   const [docContent, setDocContent] = useState('');
+
+  const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
 
   // Carrega pacientes
   useEffect(() => {
@@ -1603,54 +1787,71 @@ export default function AvaliacaoPage() {
   };
 
   const loadPatientRecords = async (patientId: string) => {
-    setLoading(true);
-    const { data } = await supabase
-      .from('records')
-      .select('*')
-      .eq('patient_id', patientId)
-      .order('created_at', { ascending: false });
+  setLoading(true);
+  const { data } = await supabase
+    .from('records')
+    .select('*')
+    .eq('patient_id', patientId)
+    .eq('record_type', 'avaliacao')
+    .order('created_at', { ascending: false });
 
-    if (data) setPastRecords(data);
-    setLoading(false);
-  };
+  if (data) setPastRecords(data);
+  setLoading(false);
+};
 
   const handleSelectTemplate = (type: DocType) => {
-    setSelectedDoc(type);
-    let templateText = DOCUMENT_TEMPLATES[type].content;
-    if (selectedPatient) {
-      templateText = templateText.replace('[Nome do Paciente]', selectedPatient.name);
-    }
-    setDocContent(templateText);
-    setView('editor');
-  };
+  setSelectedRecordId(null); // nova ficha = novo registro
+  setSelectedDoc(type);
+  let templateText = DOCUMENT_TEMPLATES[type].content;
+  if (selectedPatient) {
+    templateText = templateText.replace('[Nome do Paciente]', selectedPatient.name);
+  }
+  setDocContent(templateText);
+  setView('editor');
+};
 
   const handleSaveToDatabase = async () => {
-    setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
+  setSaving(true);
+  const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user || !selectedPatient) {
-      alert('Erro de autenticação ou paciente não selecionado.');
-      setSaving(false);
-      return;
-    }
-
-    const { error } = await supabase.from('records').insert([{
-      user_id: user.id,
-      patient_id: selectedPatient.id,
-      area_fisio: DOCUMENT_TEMPLATES[selectedDoc].title,
-      ficha_completa: { texto_livre: docContent }
-    }]);
-
+  if (!user || !selectedPatient) {
+    alert('Erro de autenticação ou paciente não selecionado.');
     setSaving(false);
+    return;
+  }
 
-    if (error) {
-      alert('Erro ao salvar avaliação: ' + error.message);
-    } else {
-      alert('Avaliação salva com sucesso!');
-      loadPatientRecords(selectedPatient.id);
-      setView('historico');
-    }
+  const recordData = {
+    user_id: user.id,
+    patient_id: selectedPatient.id,
+    area_fisio: DOCUMENT_TEMPLATES[selectedDoc].title,
+    ficha_completa: { texto_livre: docContent },
+    record_type: 'avaliacao',
   };
+
+  let error;
+
+  if (selectedRecordId) {
+    const res = await supabase
+      .from('records')
+      .update(recordData)
+      .eq('id', selectedRecordId);
+    error = res.error;
+  } else {
+    const res = await supabase.from('records').insert([recordData]);
+    error = res.error;
+  }
+
+  setSaving(false);
+
+  if (error) {
+    alert('Erro ao salvar avaliação: ' + error.message);
+  } else {
+    alert(`Avaliação ${selectedRecordId ? 'atualizada' : 'salva'} com sucesso!`);
+    setSelectedRecordId(null);
+    loadPatientRecords(selectedPatient.id);
+    setView('historico');
+  }
+};
 
   // Função para excluir uma avaliação salva
   const handleDeleteRecord = async (recordId: string) => {
@@ -1880,7 +2081,10 @@ export default function AvaliacaoPage() {
                 <p className="text-xs text-slate-500">Histórico de avaliações e documentos deste paciente.</p>
               </div>
               <button
-                onClick={() => setView('selecao_modelo')}
+               onClick={() => {
+  setSelectedRecordId(null);
+  setView('selecao_modelo');
+}}
                 className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm cursor-pointer text-sm"
               >
                 <Plus size={18} /> Nova Avaliação / Ficha
@@ -1912,11 +2116,13 @@ export default function AvaliacaoPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => {
-                          setDocContent(record.ficha_completa?.texto_livre || JSON.stringify(record.ficha_completa));
-                          setView('editor');
-                        }}
-                        className="flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+onClick={() => {
+  setSelectedRecordId(record.id);
+  setSelectedDoc(findTemplateKeyByTitle(record.area_fisio) || selectedDoc);
+  setDocContent(buildRecordContent(record, selectedPatient?.name));
+  setView('editor');
+}}
+             className="flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         <Eye size={16} /> Visualizar
                       </button>
@@ -1985,7 +2191,13 @@ export default function AvaliacaoPage() {
 
       <button
         type="button"
-        onClick={() => handleSelectTemplate(selectedDoc)}
+        onClick={() => {
+  let templateText = DOCUMENT_TEMPLATES[selectedDoc].content;
+  if (selectedPatient) {
+    templateText = templateText.replace('[Nome do Paciente]', selectedPatient.name);
+  }
+  setDocContent(templateText);
+}}
         className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
       >
         <RefreshCw size={12} />
@@ -1997,12 +2209,9 @@ export default function AvaliacaoPage() {
     <div className="p-6 md:p-8 overflow-y-auto overflow-x-auto flex-1 print:p-0 print:overflow-visible">
 
       {/* TEXTAREA — APARECE SOMENTE NA TELA */}
-      <textarea
-        value={docContent}
-        onChange={(e) => setDocContent(e.target.value)}
-        className="w-full h-full min-h-[800px] p-4 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 leading-relaxed text-sm font-mono whitespace-pre bg-slate-50/20 resize-none print:hidden"
-        wrap="off"
-      />
+    
+{/* EDITOR INTERATIVO — APARECE SOMENTE NA TELA */}
+<InteractiveTemplateEditor value={docContent} onChange={setDocContent} />
 
      {/* ÁREA DE IMPRESSÃO — SOMENTE NA IMPRESSÃO */}
 <div

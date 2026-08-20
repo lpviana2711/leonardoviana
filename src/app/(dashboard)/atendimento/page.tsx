@@ -1233,6 +1233,18 @@ export default function AtendimentoPage() {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
+  const [watermarkReady, setWatermarkReady] = useState(false);
+
+useEffect(() => {
+  const img = new Image();
+  img.src = '/modelo-para-marca-d_água.jpg';
+  img.onload = () => setWatermarkReady(true);
+  img.onerror = () => {
+    console.error('Falha ao carregar a marca d\'água');
+    setWatermarkReady(true); // libera o print mesmo assim, sem travar o usuário
+  };
+}, []);
+
   const activeSchema = getFicha(tipoFicha);
 
   const toggleSection = (sectionId: string) => {
@@ -1252,6 +1264,12 @@ export default function AtendimentoPage() {
     });
   };
 
+  useEffect(() => {
+  const handleAfterPrint = () => setViewingRecord(null);
+  window.addEventListener('afterprint', handleAfterPrint);
+  return () => window.removeEventListener('afterprint', handleAfterPrint);
+}, []);
+
   // ================= BUSCA INICIAL =================
   useEffect(() => {
     const fetchPatients = async () => {
@@ -1267,37 +1285,38 @@ export default function AtendimentoPage() {
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.cpf && p.cpf.includes(searchTerm))
   );
 
-  const handleSelectPatient = async (patient: any) => {
-    setSelectedPatient(patient);
-    setView('historico');
-    setLoading(true);
+const handleSelectPatient = async (patient: any) => {
+  setSelectedPatient(patient);
+  setView('historico');
+  setLoading(true);
 
-    const { data } = await supabase
-      .from('records')
-      .select('*')
-      .eq('patient_id', patient.id)
-      .order('created_at', { ascending: false });
+  const { data } = await supabase
+    .from('records')
+    .select('*')
+    .eq('patient_id', patient.id)
+    .eq('record_type', 'atendimento')
+    .order('created_at', { ascending: false });
 
-    if (data) setPastRecords(data);
-    setLoading(false);
-  };
+  if (data) setPastRecords(data);
+  setLoading(false);
+};
 
   // ================= AÇÕES (EDITAR, EXCLUIR, SALVAR) =================
   const handleEditRecord = (record: any) => {
-    setEditingRecordId(record.id);
-    const schema = getFicha(record.area_fisio);
-    setTipoFicha(record.area_fisio || '');
-    if (schema) {
-      setFormData(record.ficha_completa || defaultDataForSchema(schema));
-      const initialOpen: Record<string, boolean> = {};
-      schema.sections.forEach(s => (initialOpen[s.id] = true));
-      setOpenSections(initialOpen);
-    } else {
-      setFormData(record.ficha_completa || {});
-    }
-    setViewingRecord(null);
-    setView('formulario');
-  };
+  setEditingRecordId(record.id);
+  const schema = getFicha(record.area_fisio);
+  setTipoFicha(record.area_fisio || '');
+  if (schema) {
+    setFormData(record.ficha_completa || defaultDataForSchema(schema));
+    const initialOpen: Record<string, boolean> = {};
+    schema.sections.forEach(s => (initialOpen[s.id] = true));
+    setOpenSections(initialOpen);
+  } else {
+    setFormData(record.ficha_completa || {});
+  }
+  setViewingRecord(null);
+  setView('formulario');
+};
 
   const handleDeleteRecord = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir esta ficha de atendimento permanentemente?')) return;
@@ -1327,15 +1346,16 @@ export default function AtendimentoPage() {
 
     const schema = getFicha(tipoFicha);
 
-    const recordData: any = {
-      user_id: user.id,
-      patient_id: selectedPatient.id,
-      area_fisio: tipoFicha,
-      ficha_completa: formData,
-      objetivos_ficha: buildSummary(schema?.summaryMap?.objetivos, formData),
-      procedimentos: buildSummary(schema?.summaryMap?.procedimentos, formData),
-      reavaliacao: buildSummary(schema?.summaryMap?.reavaliacao, formData),
-    };
+ const recordData: any = {
+  user_id: user.id,
+  patient_id: selectedPatient.id,
+  area_fisio: tipoFicha,
+  ficha_completa: formData,
+  objetivos_ficha: buildSummary(schema?.summaryMap?.objetivos, formData),
+  procedimentos: buildSummary(schema?.summaryMap?.procedimentos, formData),
+  reavaliacao: buildSummary(schema?.summaryMap?.reavaliacao, formData),
+  record_type: 'atendimento'
+};
 
     let error;
 
@@ -1466,9 +1486,85 @@ export default function AtendimentoPage() {
   };
 
   return (
-    <>
-      {/* ================= CONTEÚDO DA PÁGINA ================= */}
-      <div className={`space-y-6 ${viewingRecord ? 'print:hidden' : ''}`}>
+  <>
+    <style
+      dangerouslySetInnerHTML={{
+        __html: `
+          .print-background {
+            display: none;
+          }
+
+          @media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #area-de-impressao,
+  #area-de-impressao * {
+    visibility: visible;
+  }
+
+  #area-de-impressao {
+    display: block !important;
+    position: relative !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 !important;
+    padding: 20mm !important;
+    overflow: visible !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+
+    /* MARCA D'ÁGUA REPETIDA A CADA PÁGINA */
+    background-image: url('/modelo-para-marca-d_água.jpg');
+    background-repeat: repeat-y;
+    background-size: 210mm 297mm;
+    background-position: top left;
+  }
+
+  .print-content {
+    position: relative !important;
+    z-index: 1 !important;
+    background: transparent !important;
+  }
+
+  html body div {
+    background-color: transparent;
+  }
+
+  #area-de-impressao,
+  #area-de-impressao * {
+    color: #000 !important;
+  }
+
+  #area-de-impressao h2,
+  #area-de-impressao h3 {
+    color: #000 !important;
+  }
+}
+
+`,
+      }}
+    />
+
+    {/* ================= CONTEÚDO DA PÁGINA ================= */}
+    <div className={`space-y-6 ${viewingRecord ? 'print:hidden' : ''}`}>
+      {/* ... resto do conteúdo continua igual ... */}
 
         {/* CABEÇALHO */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-4">
@@ -1695,63 +1791,79 @@ export default function AtendimentoPage() {
         )}
       </div>
 
-      {/* ================= MODAL DE VISUALIZAÇÃO ================= */}
-      {viewingRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in print:static print:bg-white print:p-0">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden relative print:shadow-none print:w-full print:max-w-full print:h-auto print:max-h-none print:overflow-visible">
+     {/* ================= MODAL DE VISUALIZAÇÃO ================= */}
+{viewingRecord && (
+  <div
+  id="area-de-impressao"
+  className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden relative print:shadow-none print:w-full print:max-w-full print:h-auto print:max-h-none print:overflow-visible print:rounded-none"
+>
+  <div className="print-content">
 
-            {/* Header do Modal */}
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 print:bg-white print:border-none print:p-0 print:mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-slate-800">
-                  {viewingRecord.area_fisio || 'Atendimento Geral'}
-                </h2>
-                <p className="text-sm text-slate-500">
-                  Paciente: <span className="font-semibold text-slate-700">{selectedPatient?.name}</span> | Registrado em {formatDate(viewingRecord.created_at)}
-                </p>
-              </div>
+      <div className="print-content">
+        {/* Header do Modal */}
+        <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 print:bg-white print:border-none print:p-0 print:mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-slate-800">
+              {viewingRecord.area_fisio || 'Atendimento Geral'}
+            </h2>
+            <p className="text-sm text-slate-500">
+              Paciente: <span className="font-semibold text-slate-700">{selectedPatient?.name}</span> | Registrado em {formatDate(viewingRecord.created_at)}
+            </p>
+          </div>
 
-              <div className="flex items-center gap-2 print:hidden">
-                <button onClick={() => window.print()} className="p-2 hover:bg-slate-200 rounded-lg text-slate-600 transition-colors" title="Imprimir Prontuário">
-                  <Printer size={20} />
-                </button>
-                <button onClick={() => handleEditRecord(viewingRecord)} className="p-2 hover:bg-indigo-100 rounded-lg text-indigo-600 transition-colors" title="Editar Ficha">
-                  <Edit size={20} />
-                </button>
-                <button onClick={() => handleDeleteRecord(viewingRecord.id)} className="p-2 hover:bg-rose-100 rounded-lg text-rose-600 transition-colors" title="Excluir Ficha">
-                  <Trash2 size={20} />
-                </button>
-                <div className="w-px h-6 bg-slate-200 mx-1"></div>
-                <button onClick={() => setViewingRecord(null)} className="p-2 hover:bg-slate-200 rounded-lg text-slate-500 transition-colors">
-                  <X size={24} />
-                </button>
-              </div>
-            </div>
-
-            {/* Conteúdo do Modal — RENDER GENÉRICO */}
-            <div className="p-6 overflow-y-auto space-y-6 print:overflow-visible print:p-0">
-              {(() => {
-                const schema = getFicha(viewingRecord.area_fisio);
-                if (schema && viewingRecord.ficha_completa) {
-                  return schema.sections.map(section => (
-                    <div key={section.id}>
-                      <h3 className="font-bold text-slate-700 border-b pb-2 mb-3">{section.title}</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {section.fields.map(field => renderViewField(field, viewingRecord.ficha_completa))}
-                      </div>
-                    </div>
-                  ));
-                }
-                return (
-                  <div className="text-center p-8 text-slate-500 print:hidden">
-                    Ficha salva em formato legado ou modelo não reconhecido. Sem dados estruturados disponíveis.
-                  </div>
-                );
-              })()}
-            </div>
+          <div className="flex items-center gap-2 print:hidden">
+            <button
+  onClick={() => {
+    if (watermarkReady) {
+      window.print();
+    } else {
+      // fallback: espera meio segundo e tenta mesmo assim
+      setTimeout(() => window.print(), 500);
+    }
+  }}
+  className="p-2 hover:bg-slate-200 rounded-lg text-slate-600 transition-colors"
+  title="Imprimir Prontuário"
+>
+  <Printer size={20} />
+</button>
+            <button onClick={() => handleEditRecord(viewingRecord)} className="p-2 hover:bg-indigo-100 rounded-lg text-indigo-600 transition-colors" title="Editar Ficha">
+              <Edit size={20} />
+            </button>
+            <button onClick={() => handleDeleteRecord(viewingRecord.id)} className="p-2 hover:bg-rose-100 rounded-lg text-rose-600 transition-colors" title="Excluir Ficha">
+              <Trash2 size={20} />
+            </button>
+            <div className="w-px h-6 bg-slate-200 mx-1"></div>
+            <button onClick={() => setViewingRecord(null)} className="p-2 hover:bg-slate-200 rounded-lg text-slate-500 transition-colors">
+              <X size={24} />
+            </button>
           </div>
         </div>
-      )}
+
+        {/* Conteúdo do Modal — RENDER GENÉRICO */}
+        <div className="p-6 overflow-y-auto space-y-6 print:overflow-visible print:p-0">
+          {(() => {
+            const schema = getFicha(viewingRecord.area_fisio);
+            if (schema && viewingRecord.ficha_completa) {
+              return schema.sections.map(section => (
+                <div key={section.id}>
+                  <h3 className="font-bold text-slate-700 border-b pb-2 mb-3">{section.title}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {section.fields.map(field => renderViewField(field, viewingRecord.ficha_completa))}
+                  </div>
+                </div>
+              ));
+            }
+            return (
+              <div className="text-center p-8 text-slate-500 print:hidden">
+                Ficha salva em formato legado ou modelo não reconhecido. Sem dados estruturados disponíveis.
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
     </>
   );
 }
