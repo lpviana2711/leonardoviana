@@ -2171,10 +2171,9 @@ onClick={() => {
           </div>
         )}
 
-        {/* TELA 4: EDITOR E IMPRESSÃO DO DOCUMENTO */}
+     {/* TELA 4: EDITOR E IMPRESSÃO DO DOCUMENTO */}
 {view === 'editor' && (
-  <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col h-[75vh]">
-
+  <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col h-[75vh] print:h-auto print:overflow-visible print:block print:shadow-none print:border-none">
     {/* BARRA DO EDITOR — NÃO IMPRIME */}
     <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50/50 print:hidden shrink-0 gap-2">
       <div className="flex items-center gap-3">

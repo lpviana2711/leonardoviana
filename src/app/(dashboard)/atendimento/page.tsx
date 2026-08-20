@@ -1234,6 +1234,7 @@ export default function AtendimentoPage() {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
   const [watermarkReady, setWatermarkReady] = useState(false);
+  
 
 useEffect(() => {
   const img = new Image();
