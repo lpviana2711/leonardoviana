@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, MessageCircle, UserPlus, X, Loader2 } from 'lucide-react';
+import { Plus, Trash2, MessageCircle, UserPlus, X, Loader2, Pencil } from 'lucide-react';
 import { supabase } from '@/lib/supabase'; // Importação do Supabase adicionada
 
 interface Patient {
@@ -27,6 +27,8 @@ export default function PacientesPage() {
   const [phone, setPhone] = useState('');
   const [paymentType, setPaymentType] = useState<Patient['payment_type']>('dinheiro');
 
+  const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
+
   // ================= BUSCA DE DADOS =================
   const fetchPatients = async () => {
     setLoading(true);
@@ -45,46 +47,71 @@ export default function PacientesPage() {
 
   // ================= AÇÕES =================
  // Adicionar paciente no Supabase
-  const handleCreatePatient = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name) return;
-    setIsSubmitting(true);
+  const handleSavePatient = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!name) return;
+  setIsSubmitting(true);
 
-    // 1. Pegamos quem é o usuário logado no momento
-    const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
-      alert("Erro: Você precisa estar logado para salvar um paciente.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Limpa o telefone para deixar apenas números para o link do WhatsApp
-    const cleanPhone = phone.replace(/\D/g, '');
-
-    // 2. Enviamos o user_id junto com os outros dados
-    const { error } = await supabase.from('patients').insert([
-      {
-        user_id: user.id, // <-- Aqui está a correção! Vinculamos o paciente a você.
-        name,
-        cpf: cpf || "Não informado",
-        address: address || "Não informado",
-        phone: cleanPhone,
-        payment_type: paymentType
-      }
-    ]);
-
+  if (!user) {
+    alert("Erro: Você precisa estar logado para salvar um paciente.");
     setIsSubmitting(false);
+    return;
+  }
 
-    if (error) {
-      alert("Erro ao salvar paciente: " + error.message);
-    } else {
-      setIsModalOpen(false);
-      // Limpar campos do formulário
-      setName(''); setCpf(''); setAddress(''); setPhone(''); setPaymentType('dinheiro');
-      fetchPatients(); // Recarrega a lista do banco
-    }
+  const cleanPhone = phone.replace(/\D/g, '');
+
+  const patientData = {
+    name,
+    cpf: cpf || "Não informado",
+    address: address || "Não informado",
+    phone: cleanPhone,
+    payment_type: paymentType,
   };
+
+  let error;
+
+  if (editingPatientId) {
+    const res = await supabase
+      .from('patients')
+      .update(patientData)
+      .eq('id', editingPatientId);
+    error = res.error;
+  } else {
+    const res = await supabase.from('patients').insert([
+      { user_id: user.id, ...patientData }
+    ]);
+    error = res.error;
+  }
+
+  setIsSubmitting(false);
+
+  if (error) {
+    alert("Erro ao salvar paciente: " + error.message);
+  } else {
+    setIsModalOpen(false);
+    setEditingPatientId(null);
+    setName(''); setCpf(''); setAddress(''); setPhone(''); setPaymentType('dinheiro');
+    fetchPatients();
+  }
+};
+
+  const handleOpenEditModal = (patient: Patient) => {
+  setEditingPatientId(patient.id);
+  setName(patient.name);
+  setCpf(patient.cpf === "Não informado" ? "" : patient.cpf);
+  setAddress(patient.address === "Não informado" ? "" : patient.address);
+  setPhone(patient.phone);
+  setPaymentType(patient.payment_type);
+  setIsModalOpen(true);
+};
+
+const handleOpenCreateModal = () => {
+  setEditingPatientId(null);
+  setName(''); setCpf(''); setAddress(''); setPhone(''); setPaymentType('dinheiro');
+  setIsModalOpen(true);
+};
 
   // Excluir paciente do Supabase
   const handleDeletePatient = async (id: string) => {
@@ -111,7 +138,7 @@ export default function PacientesPage() {
           <p className="text-slate-500 text-sm">Gerencie o cadastro e informações de contato.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+           onClick={handleOpenCreateModal}
           className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm text-sm"
         >
           <UserPlus size={18} />
@@ -147,25 +174,32 @@ export default function PacientesPage() {
 
               {/* BOTÕES DE AÇÃO DO CARD */}
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                {patient.phone && (
-                  <a 
-                    href={`https://wa.me/55${patient.phone}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-3 py-2 rounded-lg transition-colors"
-                  >
-                    <MessageCircle size={15} />
-                    WhatsApp
-                  </a>
-                )}
-                <button 
-                  onClick={() => handleDeletePatient(patient.id)}
-                  className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                  title="Excluir paciente"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+  {patient.phone && (
+    <a 
+      href={`https://wa.me/55${patient.phone}`}
+      target="_blank"
+      rel="noreferrer"
+      className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-3 py-2 rounded-lg transition-colors"
+    >
+      <MessageCircle size={15} />
+      WhatsApp
+    </a>
+  )}
+  <button 
+    onClick={() => handleOpenEditModal(patient)}
+    className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+    title="Editar paciente"
+  >
+    <Pencil size={16} />
+  </button>
+  <button 
+    onClick={() => handleDeletePatient(patient.id)}
+    className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+    title="Excluir paciente"
+  >
+    <Trash2 size={16} />
+  </button>
+</div>
             </div>
           ))}
         </div>
@@ -173,67 +207,78 @@ export default function PacientesPage() {
 
       {/* MODAL RESPONSIVO PARA ADICIONAR PACIENTE */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 relative space-y-4">
-            <div className="flex justify-between items-center border-b pb-3">
-              <h2 className="text-xl font-bold text-slate-800">Novo Paciente</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
-                <X size={20} />
-              </button>
-            </div>
+  <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+    <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 relative space-y-4">
+      <div className="flex justify-between items-center border-b pb-3">
+        <h2 className="text-xl font-bold text-slate-800">
+          {editingPatientId ? 'Editar Paciente' : 'Novo Paciente'}
+        </h2>
+        <button
+          onClick={() => {
+            setIsModalOpen(false);
+            setEditingPatientId(null);
+          }}
+          className="text-slate-400 hover:text-slate-600"
+        >
+          <X size={20} />
+        </button>
+      </div>
 
-            <form onSubmit={handleCreatePatient} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Nome Completo *</label>
-                <input required type="text" value={name} onChange={e => setName(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
-              </div>
+      <form onSubmit={handleSavePatient} className="space-y-4">
+  <div>
+    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Nome Completo *</label>
+    <input required type="text" value={name} onChange={e => setName(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
+  </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-500 mb-1">CPF</label>
-                  <input type="text" placeholder="000.000.000-00" value={cpf} onChange={e => setCpf(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Telefone (com DDD)</label>
-                  <input type="text" placeholder="11999999999" value={phone} onChange={e => setPhone(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
-                </div>
-              </div>
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <label className="block text-xs font-bold uppercase text-slate-500 mb-1">CPF</label>
+      <input type="text" placeholder="000.000.000-00" value={cpf} onChange={e => setCpf(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
+    </div>
+    <div>
+      <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Telefone (com DDD)</label>
+      <input type="text" placeholder="11999999999" value={phone} onChange={e => setPhone(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
+    </div>
+  </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Endereço</label>
-                <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
-              </div>
+  <div>
+    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Endereço</label>
+    <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
+  </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Tipo de Pagamento</label>
-                <select value={paymentType} onChange={e => setPaymentType(e.target.value as Patient['payment_type'])} className="w-full p-2.5 border border-slate-200 bg-white rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm">
-                  <option value="dinheiro">Dinheiro</option>
-                  <option value="cartão">Cartão</option>
-                  <option value="plano">Plano de Saúde</option>
-                  <option value="cortesia">Cortesia</option>
-                </select>
-              </div>
+  <div>
+    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Tipo de Pagamento</label>
+    <select value={paymentType} onChange={e => setPaymentType(e.target.value as Patient['payment_type'])} className="w-full p-2.5 border border-slate-200 bg-white rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm">
+      <option value="dinheiro">Dinheiro</option>
+      <option value="cartão">Cartão</option>
+      <option value="plano">Plano de Saúde</option>
+      <option value="cortesia">Cortesia</option>
+    </select>
+  </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <button 
-                  type="button" 
-                  onClick={() => setIsModalOpen(false)} 
-                  className="px-4 py-2 border rounded-lg text-slate-600 hover:bg-slate-50 font-medium text-sm transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
-                >
-                  {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : "Salvar Paciente"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+  <div className="flex justify-end gap-3 pt-4 border-t">
+    <button 
+      type="button" 
+      onClick={() => {
+        setIsModalOpen(false);
+        setEditingPatientId(null);
+      }}
+      className="px-4 py-2 border rounded-lg text-slate-600 hover:bg-slate-50 font-medium text-sm transition-colors"
+    >
+      Cancelar
+    </button>
+    <button 
+      type="submit" 
+      disabled={isSubmitting}
+      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
+    >
+      {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : (editingPatientId ? "Salvar Alterações" : "Salvar Paciente")}
+    </button>
+  </div>
+</form>
+    </div>
+  </div>
+)}
     </div>
   );
 }
