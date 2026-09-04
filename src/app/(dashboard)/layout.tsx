@@ -15,7 +15,8 @@ import {
   Search,
   X,
   LogOut,
-  Loader2
+  Loader2,
+  Dumbbell
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -47,6 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: 'Agenda', href: '/agenda', icon: Calendar },
     { name: 'Formularios', href: '/formularios', icon: Book },
     { name: 'Testes', href: '/testes', icon: Search },
+    { name: 'Exercicios', href: '/exercicios', icon: Dumbbell},
     { name: 'Notas Fiscais', href: '/faturamento', icon: DollarSign },
   ];
 
