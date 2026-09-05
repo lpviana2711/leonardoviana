@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { Filter, Search, VideoOff } from "lucide-react";
+import BunnyPlayer from "@/app/components/BunnyPlayer";
 import { supabase } from "@/lib/supabase";
 
 type Exercicio = {
@@ -10,23 +11,20 @@ type Exercicio = {
   descricao: string | null;
   categoria: string | null;
   video_url: string | null;
+  bunny_video_id: string | null;
+  bunny_library_id: string | null;
   modulo_num: number | null;
   aula_num: number | null;
   ordem: number | null;
 };
 
-function gerarLinkPreview(videoUrl: string | null): string | null {
+function gerarLinkPreviewDrive(videoUrl: string | null): string | null {
   if (!videoUrl?.trim()) {
     return null;
   }
 
   const url = videoUrl.trim();
 
-  // Aceita links como:
-  // https://drive.google.com/file/d/ARQUIVO_ID/view
-  // https://drive.google.com/file/d/ARQUIVO_ID/preview
-  // https://drive.google.com/open?id=ARQUIVO_ID
-  // https://drive.google.com/uc?id=ARQUIVO_ID
   const matchArquivo = url.match(
     /drive\.google\.com\/file\/d\/([^/?#]+)/
   );
@@ -41,7 +39,6 @@ function gerarLinkPreview(videoUrl: string | null): string | null {
     return `https://drive.google.com/file/d/${matchParametroId[1]}/preview`;
   }
 
-  // Permite utilizar uma URL de preview válida já armazenada no banco.
   if (
     url.includes("drive.google.com") &&
     url.includes("/preview")
@@ -90,36 +87,30 @@ export default function ExerciciosPage() {
         descricao,
         categoria,
         video_url,
+        bunny_video_id,
+        bunny_library_id,
         modulo_num,
         aula_num,
         ordem
       `)
-      .order("modulo_num", {
-        ascending: true,
-        nullsFirst: false,
-      })
-      .order("aula_num", {
-        ascending: true,
-        nullsFirst: false,
-      })
-      .order("ordem", {
-        ascending: true,
-        nullsFirst: false,
-      })
-      .order("titulo", {
-        ascending: true,
-      });
+      .order("modulo_num", { ascending: true })
+      .order("aula_num", { ascending: true })
+      .order("ordem", { ascending: true })
+      .order("titulo", { ascending: true });
 
     if (error) {
       console.error("Erro ao carregar exercícios:", error);
+
       setErro(
-        "Não foi possível carregar os vídeos. Verifique as colunas da tabela e as permissões do Supabase."
+        "Não foi possível carregar os vídeos. Verifique as permissões e colunas da tabela exercicios no Supabase."
       );
+
       setExercicios([]);
-    } else {
-      setExercicios((data || []) as Exercicio[]);
+      setLoading(false);
+      return;
     }
 
+    setExercicios((data || []) as Exercicio[]);
     setLoading(false);
   }
 
@@ -221,7 +212,13 @@ export default function ExerciciosPage() {
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {exerciciosFiltrados.map((exercicio) => {
-            const videoUrl = gerarLinkPreview(exercicio.video_url);
+            const possuiVideoBunny =
+              Boolean(exercicio.bunny_library_id) &&
+              Boolean(exercicio.bunny_video_id);
+
+            const drivePreviewUrl = gerarLinkPreviewDrive(
+              exercicio.video_url
+            );
 
             return (
               <article
@@ -229,28 +226,24 @@ export default function ExerciciosPage() {
                 className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md"
               >
                 <div className="relative flex aspect-video items-center justify-center bg-slate-900">
-                  {videoUrl ? (
-                    <iframe
-                      src={videoUrl}
-                      title={exercicio.titulo}
-                      className="absolute inset-0 h-full w-full border-0"
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      allowFullScreen
-                      loading="lazy"
-                      referrerPolicy="strict-origin-when-cross-origin"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center p-4 text-center text-slate-400">
-                      <VideoOff
-                        size={36}
-                        className="mb-2 text-slate-500"
-                      />
+                  {possuiVideoBunny ? (
+  <BunnyPlayer
+    libraryId={exercicio.bunny_library_id as string}
+    videoId={exercicio.bunny_video_id as string}
+    titulo={exercicio.titulo}
+  />
+) : (
+  <div className="flex flex-col items-center justify-center p-4 text-center text-slate-400">
+    <VideoOff
+      size={36}
+      className="mb-2 text-slate-500"
+    />
 
-                      <span className="text-xs">
-                        Vídeo aguardando link válido do Google Drive
-                      </span>
-                    </div>
-                  )}
+    <span className="text-xs">
+      Vídeo aguardando migração para o Bunny
+    </span>
+  </div>
+)}
                 </div>
 
                 <div className="flex flex-1 flex-col justify-between p-4">
